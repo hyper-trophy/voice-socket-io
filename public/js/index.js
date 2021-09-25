@@ -68,7 +68,7 @@ window.onload = (e) => {
     mainFunction(200);
 };
 
-var socket = io("ws://localhost:3000");
+var socket = io("wss://lets-talk-harsh.herokuapp.com");
 socket.emit("userInformation", userStatus);
 
 let wait = (d) => new Promise(r => setTimeout(r, d))
