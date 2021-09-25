@@ -10,6 +10,33 @@ const usernameLabel = document.getElementById("username-label");
 const usernameDiv = document.getElementById("username-div");
 const usersDiv = document.getElementById("users");
 
+let currDeviceID = null;
+var stream
+var MediaRecorder1
+var MediaRecorder2
+
+// (async () => {
+//     mediaSource = await navigator.mediaDevices.enumerateDevices().then(r => r.filter(e => e.kind == 'audioinput'))
+//     let selector = document.getElementById("micSource");
+//     mediaSource.map(
+//         e =>
+//             selector.appendChild(new Option(e.label, e.deviceId))
+//     )
+//     currDeviceID = mediaSource[0].deviceId
+//     selector.onchange = async () => {
+//         let idx = selector.selectedIndex
+//         currDeviceID = selector.options[idx].value
+//         console.log("divice ID", currDeviceID)
+//         stream = await navigator.mediaDevices.getUserMedia({
+//             audio: {
+//                 echoCancellation: true,
+//                 deviceId: currDeviceID
+//             }
+//         })
+//         MediaRecorder1.stream = stream
+//         MediaRecorder2.stream = stream
+//     }
+// })()
 
 usernameLabel.onclick = function () {
     usernameDiv.style.display = "block";
@@ -69,6 +96,7 @@ window.onload = (e) => {
 };
 
 var socket = io("wss://lets-talk-harsh.herokuapp.com");
+// var socket = io("ws://localhost:3000");
 socket.emit("userInformation", userStatus);
 
 let wait = (d) => new Promise(r => setTimeout(r, d))
@@ -78,7 +106,7 @@ var audioChunkObj = {
     "voice2": []
 }
 
-function mainFunction(time) {
+async function mainFunction(time) {
 
     socket.on("voice1", function (data) {
         var audio1 = new Audio(data);
@@ -116,35 +144,37 @@ function mainFunction(time) {
             audioChunkObj[channel] = [];
         }
 
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(async (stream) => {
-        var MediaRecorder1 = new MediaRecorder(stream);
-        var MediaRecorder2 = new MediaRecorder(stream);
-
-        MediaRecorder1.addEventListener("dataavailable", function (event) {
-            audioChunkObj["voice1"].push(event.data);
-        });
-
-        MediaRecorder2.addEventListener("dataavailable", function (event) {
-            audioChunkObj["voice2"].push(event.data);
-        });
-
-        MediaRecorder1.addEventListener("stop", sendData("voice1"))
-        MediaRecorder2.addEventListener("stop", sendData("voice2"))
-
-        MediaRecorder1.start()
-        await wait(10)
-        while (true) {
-            await wait(100)
-            MediaRecorder2.start()
-            await wait(10)
-            MediaRecorder1.stop()
-            await wait(100)
-            MediaRecorder1.start()
-            await wait(10)
-            MediaRecorder2.stop()
+    stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            echoCancellation: true,
+            // deviceId: currDeviceID
         }
     })
+    MediaRecorder1 = new MediaRecorder(stream);
+    MediaRecorder2 = new MediaRecorder(stream);
 
+    MediaRecorder1.addEventListener("dataavailable", function (event) {
+        audioChunkObj["voice1"].push(event.data);
+    });
+
+    MediaRecorder2.addEventListener("dataavailable", function (event) {
+        audioChunkObj["voice2"].push(event.data);
+    });
+
+    MediaRecorder1.addEventListener("stop", sendData("voice1"))
+    MediaRecorder2.addEventListener("stop", sendData("voice2"))
+
+    MediaRecorder1.start()
+    while (true) {
+        await wait(200)
+        MediaRecorder2.state!="recording" && MediaRecorder2.start()
+        await wait(230)
+        MediaRecorder1.stop()
+        await wait(200)
+         MediaRecorder1.state!="recording" && MediaRecorder1.start()
+        await wait(230)
+        MediaRecorder2.stop()
+    }
     // navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
     //     var madiaRecorder = new MediaRecorder(stream);
 
