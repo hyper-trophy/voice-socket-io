@@ -166,13 +166,13 @@ async function mainFunction(time) {
 
     MediaRecorder1.start()
     while (true) {
-        await wait(200)
-        MediaRecorder2.state!="recording" && MediaRecorder2.start()
-        await wait(230)
+        await wait(500)
+        MediaRecorder2.start()
+        await wait(150)
         MediaRecorder1.stop()
-        await wait(200)
-         MediaRecorder1.state!="recording" && MediaRecorder1.start()
-        await wait(230)
+        await wait(500)
+        MediaRecorder1.start()
+        await wait(150)
         MediaRecorder2.stop()
     }
     // navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {

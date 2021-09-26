@@ -3,6 +3,7 @@ const app = express();
 const handlebars = require("express-handlebars");
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
+var cors = require('cors')
 
 //To holding users information 
 const socketsStatus = {};
@@ -10,6 +11,7 @@ const socketsStatus = {};
 //config and set handlebars to express
 const customHandlebars = handlebars.create({ layoutsDir: "./views" });
 
+app.use(cors())
 app.engine("handlebars", customHandlebars.engine);
 app.set("view engine", "handlebars");
 
